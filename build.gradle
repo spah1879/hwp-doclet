@@ -1,0 +1,35 @@
+plugins {
+  id "java"
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(11)
+  }
+}
+
+compileJava.options.encoding = "UTF-8"
+compileJava.options.compilerArgs << "-Xlint:unchecked"
+compileTestJava.options.encoding = "UTF-8"
+compileTestJava.options.compilerArgs << "-Xlint:unchecked"
+
+group "io.github.spah1879"
+version "1.0.0"
+
+configurations {
+  compileOnly {
+    extendsFrom annotationProcessor
+  }
+}
+
+dependencies {
+  implementation "org.yaml:snakeyaml:2.3"
+  implementation "kr.dogfoot:hwplib:1.1.7"
+  compileOnly 'org.projectlombok:lombok:1.18.34'
+  annotationProcessor 'org.projectlombok:lombok:1.18.34'
+}
