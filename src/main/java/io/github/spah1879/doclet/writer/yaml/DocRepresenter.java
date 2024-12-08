@@ -62,6 +62,7 @@ public class DocRepresenter extends Representer {
       "flatSignature",
       "tags",
       "comment",
+      "annotations",
       "fields",
       "constructors",
       "methods",

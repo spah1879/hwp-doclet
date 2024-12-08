@@ -1,7 +1,7 @@
 package io.github.spah1879.doclet.assorted;
 
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.ExecutableElement;
@@ -12,13 +12,12 @@ import javax.lang.model.type.TypeMirror;
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.util.DocTrees;
 
-import io.github.spah1879.doclet.assorted.DocDescription.Comment;
 import io.github.spah1879.doclet.assorted.DocDescription.Constructor;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
-import io.github.spah1879.doclet.assorted.DocDescription.Tag;
 import io.github.spah1879.doclet.assorted.DocDescription.Type;
+import io.github.spah1879.doclet.parser.AnnotationParser;
 import io.github.spah1879.doclet.parser.BlockTagParser;
 import io.github.spah1879.doclet.parser.CommentParser;
 import jdk.javadoc.doclet.DocletEnvironment;
@@ -52,9 +51,9 @@ public class Aggregator {
         .collect(Collectors.joining(", ", "(", ")"));
   }
 
-  private Parameter buildParameter(VariableElement parameter, List<Entry<String, String>> tags) {
+  private Parameter buildParameter(VariableElement parameter, Map<String, String> tags) {
     String paramName = parameter.getSimpleName().toString();
-    String comment = tags.stream()
+    String comment = tags.entrySet().stream()
         .filter(t -> t.getKey().equals("param") && t.getValue().startsWith(paramName + " "))
         .findFirst()
         .map(t -> t.getValue().substring(paramName.length() + 1))
@@ -71,13 +70,9 @@ public class Aggregator {
 
     DocCommentTree commentTree = docTrees.getDocCommentTree(element);
     CommentParser parser = CommentParser.parse(commentTree, reporter);
-    List<Entry<String, String>> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
-    tags.forEach(t -> builder.tag(new Tag(t.getKey(), t.getValue())));
-    builder.comment(Comment.builder()
-        .firstSentence(parser.getDocCommentFirstSentence())
-        .body(parser.getDocCommentBody())
-        .fullBody(parser.getDocCommentFullBody())
-        .build());
+    builder.comment(parser.getComment());
+    builder.tags(BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags());
+    builder.annotations(AnnotationParser.parse(element.getAnnotationMirrors(), reporter));
   }
 
   public void aggregateFiledElements(List<VariableElement> elements) {
@@ -88,14 +83,9 @@ public class Aggregator {
 
       DocCommentTree commentTree = docTrees.getDocCommentTree(e);
       CommentParser parser = CommentParser.parse(commentTree, reporter);
-      List<Entry<String, String>> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
-      tags.forEach(t -> fb.tag(new Tag(t.getKey(), t.getValue())));
-      fb.comment(Comment.builder()
-          .firstSentence(parser.getDocCommentFirstSentence())
-          .body(parser.getDocCommentBody())
-          .fullBody(parser.getDocCommentFullBody())
-          .build());
-
+      fb.comment(parser.getComment());
+      fb.tags(BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags());
+      fb.annotations(AnnotationParser.parse(e.getAnnotationMirrors(), reporter));
       builder.field(fb.build());
     });
   }
@@ -106,22 +96,19 @@ public class Aggregator {
       cb.name(String.valueOf(e.getEnclosingElement().getSimpleName()));
       e.getModifiers().forEach(n -> cb.modifier(String.valueOf(n)));
       cb.flatSignature(getFlatSignature(e.getParameters()));
+
       DocCommentTree commentTree = docTrees.getDocCommentTree(e);
       CommentParser parser = CommentParser.parse(commentTree, reporter);
-      List<Entry<String, String>> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
-      tags.forEach(t -> cb.tag(new Tag(t.getKey(), t.getValue())));
+      cb.comment(parser.getComment());
+      Map<String, String> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
+      cb.tags(tags);
       e.getParameters().forEach(p -> cb.parameter(buildParameter(p, tags)));
-      cb.comment(Comment.builder()
-          .firstSentence(parser.getDocCommentFirstSentence())
-          .body(parser.getDocCommentBody())
-          .fullBody(parser.getDocCommentFullBody())
-          .build());
+      cb.annotations(AnnotationParser.parse(e.getAnnotationMirrors(), reporter));
       builder.constructor(cb.build());
     });
   }
 
   public void aggregateMethodElements(List<ExecutableElement> elements) {
-
     elements.forEach(e -> {
       Method.MethodBuilder mb = Method.builder();
       mb.name(String.valueOf(e.getSimpleName()));
@@ -131,18 +118,13 @@ public class Aggregator {
 
       DocCommentTree commentTree = docTrees.getDocCommentTree(e);
       CommentParser parser = CommentParser.parse(commentTree, reporter);
-      List<Entry<String, String>> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
-      tags.forEach(t -> mb.tag(new Tag(t.getKey(), t.getValue())));
+      mb.comment(parser.getComment());
+      Map<String, String> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
+      mb.tags(tags);
       e.getParameters().forEach(p -> mb.parameter(buildParameter(p, tags)));
-      mb.comment(Comment.builder()
-          .firstSentence(parser.getDocCommentFirstSentence())
-          .body(parser.getDocCommentBody())
-          .fullBody(parser.getDocCommentFullBody())
-          .build());
-
+      mb.annotations(AnnotationParser.parse(e.getAnnotationMirrors(), reporter));
       builder.method(mb.build());
     });
-
   }
 
   public DocDescription getDocDescription() {

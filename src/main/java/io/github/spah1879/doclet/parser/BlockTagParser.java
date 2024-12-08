@@ -1,9 +1,9 @@
 package io.github.spah1879.doclet.parser;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 
 import com.sun.source.doctree.AuthorTree;
 import com.sun.source.doctree.DeprecatedTree;
@@ -26,15 +26,15 @@ import jdk.javadoc.doclet.Reporter;
 
 public class BlockTagParser extends DocParser {
 
-  private final List<Entry<String, String>> blockTags;
+  private final Map<String, String> blockTags;
 
   private BlockTagParser(Reporter reporter) {
     super(reporter);
-    this.blockTags = new ArrayList<>();
+    this.blockTags = new HashMap<>();
   }
 
   private void addToBlockTags(String tagName, String name, List<? extends DocTree> contents) {
-    blockTags.add(new SimpleEntry<>(tagName, BodyParser.parse(name, contents, reporter.get()).getBody()));
+    blockTags.put(tagName, BodyParser.parse(name, contents, reporter.get()).getBody());
   }
 
   private void addToBlockTags(String tagName, List<? extends DocTree> contents) {
@@ -140,7 +140,7 @@ public class BlockTagParser extends DocParser {
     return DEFAULT_VALUE;
   }
 
-  public List<Entry<String, String>> getBlockTags() {
+  public Map<String, String> getBlockTags() {
     return blockTags;
   }
 

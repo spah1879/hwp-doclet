@@ -39,7 +39,7 @@ public class HwpDoclet implements Doclet {
 
   @Override
   public String getName() {
-    return "HWP Doclet 1.0.0";
+    return getClass().getSimpleName();
   }
 
   @Override

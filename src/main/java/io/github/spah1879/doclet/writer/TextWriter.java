@@ -47,7 +47,7 @@ public class TextWriter extends DocWriter {
     add("\tType: ").add(typeDesc.getType()).add("\n");
 
     add("\tTags:\n");
-    typeDesc.getTags().forEach(t -> add("\t\t[@").add(t.getName()).add("] [").add(t.getValue()).add("]\n"));
+    typeDesc.getTags().entrySet().forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
 
     add("\tComment:\n")
         .add("\t\tFirst Sentence: ").add(typeDesc.getComment().getFirstSentence()).add("\n")
@@ -66,7 +66,7 @@ public class TextWriter extends DocWriter {
       add("\t   Type: ").add(field.getType().getFull()).add("\n");
 
       add("\tTags:\n");
-      field.getTags().forEach(t -> add("\t\t[@").add(t.getName()).add("] [").add(t.getValue()).add("]\n"));
+      field.getTags().entrySet().forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
 
       add("\tComment:\n")
           .add("\t\tFirst Sentence: ").add(field.getComment().getFirstSentence()).add("\n")
@@ -93,7 +93,8 @@ public class TextWriter extends DocWriter {
       add("\t   Flat Signature: ").add(constructor.getFlatSignature()).add("\n");
 
       add("\tTags:\n");
-      constructor.getTags().forEach(t -> add("\t\t[@").add(t.getName()).add("] [").add(t.getValue()).add("]\n"));
+      constructor.getTags().entrySet()
+          .forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
 
       add("\tComment:\n")
           .add("\t\tFirst Sentence: ").add(constructor.getComment().getFirstSentence()).add("\n")
@@ -120,7 +121,7 @@ public class TextWriter extends DocWriter {
       add("\t   Flat Signature: ").add(method.getFlatSignature()).add("\n");
 
       add("\tTags:\n");
-      method.getTags().forEach(t -> add("\t\t[@").add(t.getName()).add("] [").add(t.getValue()).add("]\n"));
+      method.getTags().entrySet().forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
 
       add("\tComment:\n")
           .add("\t\tFirst Sentence: ").add(method.getComment().getFirstSentence()).add("\n")

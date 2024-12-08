@@ -6,13 +6,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
-import io.github.spah1879.doclet.assorted.DocDescription.Tag;
 import io.github.spah1879.doclet.writer.hwp.Common;
 import io.github.spah1879.doclet.writer.hwp.TableHandler;
 import kr.dogfoot.hwplib.object.HWPFile;
@@ -97,14 +97,6 @@ public class HwpWriter extends DocWriter {
         middleRightShadeBorderFillId);
   }
 
-  private String getTagValue(List<Tag> tags, String tagName) {
-    return tags.stream()
-        .filter(t -> t.getName().equals(tagName))
-        .findFirst()
-        .map(Tag::getValue)
-        .orElse("");
-  }
-
   private String getModifierString(List<String> modifiers) {
     return modifiers.stream().collect(Collectors.joining(" "));
   }
@@ -115,7 +107,7 @@ public class HwpWriter extends DocWriter {
   }
 
   private void describeClass(DocDescription desc, int rowIndex) {
-    List<Tag> tags = desc.getTags();
+    Map<String, String> tags = desc.getTags();
 
     tableHandler.setParagraphForCell(0, rowIndex, TITLE_NAME, topLeftShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(1, rowIndex, desc.getName(), topMiddleBorderFillId);
@@ -126,9 +118,9 @@ public class HwpWriter extends DocWriter {
     tableHandler.setParagraphForCell(0, rowIndex, TITLE_TYPE, middleLeftShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(1, rowIndex, desc.getType());
     tableHandler.setParagraphForCell(2, rowIndex, TITLE_AUTHOR, basicShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(3, rowIndex, getTagValue(tags, "author"));
+    tableHandler.setParagraphForCell(3, rowIndex, tags.getOrDefault("author", ""));
     tableHandler.setParagraphForCell(4, rowIndex, TITLE_SINCE, basicShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(5, rowIndex, getTagValue(tags, "since"), middleRightBorderFillId);
+    tableHandler.setParagraphForCell(5, rowIndex, tags.getOrDefault("since", ""), middleRightBorderFillId);
   }
 
   private void describeFields(List<Field> fields, int rowIndex) {

@@ -1,6 +1,7 @@
 package io.github.spah1879.doclet.assorted;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,15 +21,6 @@ public final class DocDescription {
   public static class Type {
     String full;
     String simple;
-  }
-
-  @Setter
-  @Getter
-  @Builder
-  @AllArgsConstructor
-  public static class Tag {
-    String name;
-    String value;
   }
 
   @Setter
@@ -58,9 +50,10 @@ public final class DocDescription {
     @Singular
     List<String> modifiers;
     Type type;
-    @Singular
-    List<Tag> tags;
+    Map<String, String> tags;
     Comment comment;
+    @Singular
+    Map<String, Map<String, Object>> annotations;
   }
 
   @Setter
@@ -73,9 +66,10 @@ public final class DocDescription {
     @Singular
     List<Parameter> parameters;
     String flatSignature;
-    @Singular
-    List<Tag> tags;
+    Map<String, String> tags;
     Comment comment;
+    @Singular
+    Map<String, Map<String, Object>> annotations;
   }
 
   @Setter
@@ -89,9 +83,10 @@ public final class DocDescription {
     @Singular
     List<Parameter> parameters;
     String flatSignature;
-    @Singular
-    List<Tag> tags;
+    Map<String, String> tags;
     Comment comment;
+    @Singular
+    Map<String, Map<String, Object>> annotations;
   }
 
   String packageName;
@@ -99,9 +94,10 @@ public final class DocDescription {
   @Singular
   List<String> modifiers;
   String type;
-  @Singular
-  List<Tag> tags;
+  Map<String, String> tags;
   Comment comment;
+  @Singular
+  Map<String, Map<String, Object>> annotations;
   @Singular
   List<Field> fields;
   @Singular
