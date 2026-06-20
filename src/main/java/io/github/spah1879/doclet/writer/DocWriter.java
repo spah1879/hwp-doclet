@@ -24,6 +24,6 @@ public abstract class DocWriter {
     reporter.ifPresentOrElse(r -> r.print(Kind.NOTE, message), () -> System.out.println(message));
   }
 
-  public abstract void write(List<DocDescription> descriptions, File file) throws Exception;
+  public abstract void write(List<DocDescription> descriptions, File file, List<String> outputForamts) throws Exception;
 
 }
