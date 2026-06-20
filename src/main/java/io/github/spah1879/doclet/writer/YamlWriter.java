@@ -1,7 +1,6 @@
 package io.github.spah1879.doclet.writer;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -19,7 +18,8 @@ public final class YamlWriter extends DocWriter {
   }
 
   @Override
-  public void write(List<DocDescription> descriptions, File file) throws FileNotFoundException {
+  public void write(List<DocDescription> descriptions, File file, List<String> outputForamts)
+      throws Exception {
 
     PrintWriter writer = new PrintWriter(file);
 

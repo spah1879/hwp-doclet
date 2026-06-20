@@ -29,11 +29,24 @@ import kr.dogfoot.hwplib.tool.TableCellMerger;
 public class TableHandler {
 
   final ControlTable table;
+  int titleParaShapeId = Common.FIRST_PARA_SHAPE_ID;
 
-  public TableHandler(Section section, boolean dividePage) {
-    Paragraph paragraph = Common.addNewParagraph(section, dividePage);
+  private TableHandler(Paragraph paragraph) {
     paragraph.getText().addExtendCharForTable();
     this.table = (ControlTable) paragraph.addNewControl(ControlType.Table);
+  }
+
+  public static TableHandler newTableHandler(Paragraph paragraph) {
+    return new TableHandler(paragraph);
+  }
+
+  public static TableHandler newTableHandler(Section section, boolean dividePage) {
+    Paragraph paragraph = Common.addNewParagraph(section, dividePage);
+    return new TableHandler(paragraph);
+  }
+
+  public int getTitleParaShapeId() {
+    return titleParaShapeId;
   }
 
   public int getRowCount() {
@@ -48,6 +61,10 @@ public class TableHandler {
     List<Row> rows = table.getRowList();
     List<Cell> cells = rows.get(rowIndex).getCellList();
     return cells.get(colIndex);
+  }
+
+  public void setTitleParaShapeId(int paraShapeId) {
+    titleParaShapeId = paraShapeId;
   }
 
   public boolean mergeCell(int startRow, int startCol, int rowSpan, int colSpan) {
@@ -153,15 +170,21 @@ public class TableHandler {
     cell.getListHeader().setBorderFillId(borderFillId);
   }
 
-  public void addParagraphForCell(Cell cell, String text, int charShapeId) {
+  public void addParagraphForCell(Cell cell, String text, int charShapeId, int paraShapeId) {
     Paragraph p = cell.getParagraphList().addNewParagraph();
     Common.setParaHeader(p);
     Common.setParaText(p, text);
-    Common.setParaCharShape(p, charShapeId);
+    if (charShapeId > 0) {
+      Common.setParaCharShape(p, charShapeId);
+    }
     Common.setParaLineSeg(p);
+    if (paraShapeId > 0) {
+      p.getHeader().setParaShapeId(paraShapeId);
+    }
   }
 
-  public void setParagraphForCell(int colIndex, int rowIndex, String text, int borderFillId, int charShapeId) {
+  private void setParagraphForCell(int colIndex, int rowIndex, String text, int borderFillId, int charShapeId,
+      int paraShapeId) {
     List<Row> rows = table.getRowList();
     List<Cell> cells = rows.get(rowIndex).getCellList();
     Cell cell = cells.get(colIndex);
@@ -170,15 +193,23 @@ public class TableHandler {
     if (borderFillId > 0) {
       setListHeaderBorderFillForCell(cell, borderFillId);
     }
-    addParagraphForCell(cell, text, charShapeId);
+    addParagraphForCell(cell, text, charShapeId, paraShapeId);
+  }
+
+  public void setTitleParagraphForCell(int colIndex, int rowIndex, String text, int borderFillId, int charShapeId) {
+    setParagraphForCell(colIndex, rowIndex, text, borderFillId, charShapeId, titleParaShapeId);
+  }
+
+  public void setParagraphForCell(int colIndex, int rowIndex, String text, int borderFillId, int charShapeId) {
+    setParagraphForCell(colIndex, rowIndex, text, borderFillId, charShapeId, Common.FIRST_PARA_SHAPE_ID);
   }
 
   public void setParagraphForCell(int colIndex, int rowIndex, String text, int borderFillId) {
-    setParagraphForCell(colIndex, rowIndex, text, borderFillId, 1);
+    setParagraphForCell(colIndex, rowIndex, text, borderFillId, Common.FIRST_CHAR_SHAPE_ID, Common.FIRST_PARA_SHAPE_ID);
   }
 
   public void setParagraphForCell(int colIndex, int rowIndex, String text) {
-    setParagraphForCell(colIndex, rowIndex, text, 0, 1);
+    setParagraphForCell(colIndex, rowIndex, text, 0, Common.FIRST_CHAR_SHAPE_ID, Common.FIRST_PARA_SHAPE_ID);
   }
 
   public int addRow(int colNum, int cellBorderFillId) {
@@ -187,7 +218,7 @@ public class TableHandler {
     for (int colIndex = 0; colIndex < colNum; colIndex++) {
       Cell cell = row.addNewCell();
       setListHeaderForCell(cell, colIndex, rowIndex, cellBorderFillId);
-      addParagraphForCell(cell, "", 1);
+      addParagraphForCell(cell, "", Common.FIRST_CHAR_SHAPE_ID, Common.FIRST_PARA_SHAPE_ID);
     }
     return rowIndex;
   }

@@ -15,11 +15,15 @@ import io.github.spah1879.doclet.assorted.DocDescription.Method;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
 import io.github.spah1879.doclet.writer.hwp.Common;
 import io.github.spah1879.doclet.writer.hwp.TableHandler;
+import kr.dogfoot.hwp2hwpx.Hwp2Hwpx;
 import kr.dogfoot.hwplib.object.HWPFile;
 import kr.dogfoot.hwplib.object.bodytext.Section;
 import kr.dogfoot.hwplib.object.bodytext.control.table.Cell;
+import kr.dogfoot.hwplib.object.bodytext.paragraph.Paragraph;
 import kr.dogfoot.hwplib.tool.blankfilemaker.BlankFileMaker;
 import kr.dogfoot.hwplib.writer.HWPWriter;
+import kr.dogfoot.hwpxlib.object.HWPXFile;
+import kr.dogfoot.hwpxlib.writer.HWPXWriter;
 
 public class HwpWriter extends DocWriter {
 
@@ -46,6 +50,7 @@ public class HwpWriter extends DocWriter {
 
   private int boldCharShapeId;
   private int boldSlimCharShapeId;
+  private int shadeParaShapeId;
   private int basicBorderFillId;
   private int basicShadeBorderFillId;
   private int topLeftShadeBorderFillId;
@@ -73,24 +78,26 @@ public class HwpWriter extends DocWriter {
   }
 
   private void prepareStockObjects(HWPFile hwpFile) {
-    boldCharShapeId = Common.getCharShapeIdFromDefault(hwpFile, 100, true);
-    boldSlimCharShapeId = Common.getCharShapeIdFromDefault(hwpFile, 90, true);
-    basicBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_12, MM0_12);
+    int boldCharParaShapeShadeBorderFillId = Common.getBorderFillIdForChar(hwpFile, true);
+    boldCharShapeId = Common.getCharShapeIdFromFirst(hwpFile, 100, true, boldCharParaShapeShadeBorderFillId);
+    boldSlimCharShapeId = Common.getCharShapeIdFromFirst(hwpFile, 90, true, boldCharParaShapeShadeBorderFillId);
+    shadeParaShapeId = Common.getParaShapeIdFromFirst(hwpFile, boldCharParaShapeShadeBorderFillId);
+    basicBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_12, MM0_12, false);
     basicShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_12, MM0_12, true);
     topLeftShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_6, MM0_12, true);
-    topMiddleBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_6, MM0_12);
+    topMiddleBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_6, MM0_12, false);
     topMiddleShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_6, MM0_12, true);
-    topRightBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_6, MM0_12);
-    middleLeftBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_12, MM0_12);
+    topRightBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_6, MM0_12, false);
+    middleLeftBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_12, MM0_12, false);
     middleLeftShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_12, MM0_12, true);
-    middleRightBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_12, MM0_12);
+    middleRightBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_12, MM0_12, false);
     middleRightShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_12, MM0_12, true);
     middleUpBoldShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_6, MM0_4, MM0_12, true);
-    bottomLeftBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_12, MM0_6);
+    bottomLeftBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_12, MM0_6, false);
     bottomLeftShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_12, MM0_12, MM0_6, true);
-    bottomMiddleBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_12, MM0_6);
+    bottomMiddleBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_12, MM0_6, false);
     bottomMiddleShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_12, MM0_12, MM0_6, true);
-    bottomRightBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_12, MM0_6);
+    bottomRightBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_12, MM0_6, false);
     bottomRightShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_12, MM0_6, MM0_12, MM0_6, true);
     bottomUpBoldShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_6, MM0_4, MM0_6, true);
     middleShadeFillIds = Arrays.asList(middleLeftShadeBorderFillId, basicShadeBorderFillId,
@@ -109,34 +116,35 @@ public class HwpWriter extends DocWriter {
   private void describeClass(DocDescription desc, int rowIndex) {
     Map<String, String> tags = desc.getTags();
 
-    tableHandler.setParagraphForCell(0, rowIndex, TITLE_NAME, topLeftShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NAME, topLeftShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(1, rowIndex, desc.getName(), topMiddleBorderFillId);
-    tableHandler.setParagraphForCell(2, rowIndex, TITLE_PACKAGE, topMiddleShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_PACKAGE, topMiddleShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(3, rowIndex, desc.getPackageName(), topRightBorderFillId);
     rowIndex++;
 
-    tableHandler.setParagraphForCell(0, rowIndex, TITLE_TYPE, middleLeftShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_TYPE, middleLeftShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(1, rowIndex, desc.getType());
-    tableHandler.setParagraphForCell(2, rowIndex, TITLE_AUTHOR, basicShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_AUTHOR, basicShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(3, rowIndex, tags.getOrDefault("author", ""));
-    tableHandler.setParagraphForCell(4, rowIndex, TITLE_SINCE, basicShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(4, rowIndex, TITLE_SINCE, basicShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(5, rowIndex, tags.getOrDefault("since", ""), middleRightBorderFillId);
   }
 
   private void describeFields(List<Field> fields, int rowIndex) {
     if (fields.isEmpty()) {
-      tableHandler.setParagraphForCell(0, rowIndex, TITLE_NO_PROPERTY, middleUpBoldShadeBorderFillId,
+      tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NO_PROPERTY, middleUpBoldShadeBorderFillId,
           boldCharShapeId);
       return;
     }
 
-    tableHandler.setParagraphForCell(0, rowIndex, TITLE_PROPERTY, middleUpBoldShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_PROPERTY, middleUpBoldShadeBorderFillId, boldCharShapeId);
     rowIndex++;
 
-    tableHandler.setParagraphForCell(0, rowIndex, TITLE_NAME, middleLeftShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(1, rowIndex, TITLE_MODIFIERS, basicShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(2, rowIndex, TITLE_TYPE, basicShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(3, rowIndex, TITLE_DESCRIPTION, middleRightShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NAME, middleLeftShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(1, rowIndex, TITLE_MODIFIERS, basicShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_TYPE, basicShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(3, rowIndex, TITLE_DESCRIPTION, middleRightShadeBorderFillId,
+        boldCharShapeId);
     rowIndex++;
 
     for (Field field : fields) {
@@ -151,36 +159,38 @@ public class HwpWriter extends DocWriter {
 
   private void describeMethods(List<Method> methods, int rowIndex) {
     if (methods.isEmpty()) {
-      tableHandler.setParagraphForCell(0, rowIndex, TITLE_NO_METHOD, middleUpBoldShadeBorderFillId, boldCharShapeId);
+      tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NO_METHOD, middleUpBoldShadeBorderFillId,
+          boldCharShapeId);
       return;
     }
 
-    tableHandler.setParagraphForCell(0, rowIndex, TITLE_METHOD, middleUpBoldShadeBorderFillId, boldCharShapeId);
+    tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_METHOD, middleUpBoldShadeBorderFillId, boldCharShapeId);
     rowIndex++;
 
     int index = 0;
     for (Method method : methods) {
-      tableHandler.setParagraphForCell(0, rowIndex, TITLE_NAME, middleLeftShadeBorderFillId, boldCharShapeId);
+      tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NAME, middleLeftShadeBorderFillId, boldCharShapeId);
       tableHandler.setParagraphForCell(1, rowIndex, method.getName());
-      tableHandler.setParagraphForCell(2, rowIndex, TITLE_DESCRIPTION, basicShadeBorderFillId, boldCharShapeId);
+      tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_DESCRIPTION, basicShadeBorderFillId, boldCharShapeId);
       tableHandler.setParagraphForCell(3, rowIndex, method.getComment().getFirstSentence(), middleRightBorderFillId);
       rowIndex++;
 
-      tableHandler.setParagraphForCell(0, rowIndex, TITLE_MODIFIERS, middleLeftShadeBorderFillId, boldCharShapeId);
+      tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_MODIFIERS, middleLeftShadeBorderFillId, boldCharShapeId);
       tableHandler.setParagraphForCell(1, rowIndex, getModifierString(method.getModifiers()));
-      tableHandler.setParagraphForCell(2, rowIndex, TITLE_RETURN_TYPE, basicShadeBorderFillId, boldSlimCharShapeId);
+      tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_RETURN_TYPE, basicShadeBorderFillId,
+          boldSlimCharShapeId);
       tableHandler.setParagraphForCell(3, rowIndex, method.getReturnType().getSimple());
-      tableHandler.setParagraphForCell(4, rowIndex, TITLE_PARAMETERS, basicShadeBorderFillId, boldSlimCharShapeId);
+      tableHandler.setTitleParagraphForCell(4, rowIndex, TITLE_PARAMETERS, basicShadeBorderFillId, boldSlimCharShapeId);
       tableHandler.setParagraphForCell(5, rowIndex, method.getFlatSignature(), middleRightBorderFillId);
 
       rowIndex++;
 
       List<Parameter> parameters = methods.get(index).getParameters();
       if (!parameters.isEmpty()) {
-        tableHandler.setParagraphForCell(0, rowIndex, TITLE_DETAIL, middleLeftShadeBorderFillId, boldCharShapeId);
-        tableHandler.setParagraphForCell(1, rowIndex, TITLE_NAME, basicShadeBorderFillId, boldCharShapeId);
-        tableHandler.setParagraphForCell(2, rowIndex, TITLE_TYPE, basicShadeBorderFillId, boldCharShapeId);
-        tableHandler.setParagraphForCell(3, rowIndex, TITLE_DESCRIPTION, middleRightShadeBorderFillId,
+        tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_DETAIL, middleLeftShadeBorderFillId, boldCharShapeId);
+        tableHandler.setTitleParagraphForCell(1, rowIndex, TITLE_NAME, basicShadeBorderFillId, boldCharShapeId);
+        tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_TYPE, basicShadeBorderFillId, boldCharShapeId);
+        tableHandler.setTitleParagraphForCell(3, rowIndex, TITLE_DESCRIPTION, middleRightShadeBorderFillId,
             boldCharShapeId);
         rowIndex++;
 
@@ -231,7 +241,7 @@ public class HwpWriter extends DocWriter {
     tableHandler.setListHeaderBorderFillForCell(colIndex, rowIndex, borderFillId);
   }
 
-  private void describe(DocDescription desc, Section section) {
+  private void describe(DocDescription desc, Section section, int index) {
     final int propertiesRowCount = desc.getFields().isEmpty() ? 1 : desc.getFields().size() + 2;
     int parametersRowTotalCount = 0;
     final List<Method> methods = desc.getMethods();
@@ -243,7 +253,13 @@ public class HwpWriter extends DocWriter {
     final int methodsRowCount = METHOD_ROW_COUNT_OF_TITLE + methods.size() * METHOD_ROW_COUNT_PER_METHOD;
     final int totalRowCount = CLASS_ROW_COUNT + propertiesRowCount + methodsRowCount + parametersRowTotalCount;
 
-    tableHandler = new TableHandler(section, true);
+    if (index == 0) {
+      Paragraph paragraph = section.getParagraph(0);
+      tableHandler = TableHandler.newTableHandler(paragraph);
+    } else {
+      tableHandler = TableHandler.newTableHandler(section, true);
+    }
+    tableHandler.setTitleParaShapeId(shadeParaShapeId);
     tableHandler.setCtrlHeaderRecord(0);
     tableHandler.setTableRecordForCells(basicBorderFillId, BASE_COLUMN_COUNT, totalRowCount);
 
@@ -303,7 +319,7 @@ public class HwpWriter extends DocWriter {
   }
 
   @Override
-  public void write(List<DocDescription> descriptions, File file) throws Exception {
+  public void write(List<DocDescription> descriptions, File file, List<String> outputForamts) throws Exception {
 
     HWPFile hwpFile = BlankFileMaker.make();
     if (hwpFile == null) {
@@ -312,11 +328,18 @@ public class HwpWriter extends DocWriter {
 
     prepareStockObjects(hwpFile);
     Section section = hwpFile.getBodyText().getSectionList().get(0);
-    section.deleteParagraph(0);
 
-    descriptions.forEach(description -> describe(description, section));
+    for (int index = 0; index < descriptions.size(); index++) {
+      describe(descriptions.get(index), section, index);
+    }
 
-    HWPWriter.toFile(hwpFile, file.getAbsolutePath());
+    if (outputForamts.contains("hwp")) {
+      HWPWriter.toFile(hwpFile, file.getAbsolutePath());
+    }
+
+    if (outputForamts.contains("hwpx")) {
+      HWPXFile hwpxFile = Hwp2Hwpx.toHWPX(hwpFile);
+      HWPXWriter.toFilepath(hwpxFile, file.getAbsolutePath() + "x");
+    }
   }
-
 }

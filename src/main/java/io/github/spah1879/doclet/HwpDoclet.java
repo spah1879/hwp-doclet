@@ -27,6 +27,7 @@ import jdk.javadoc.doclet.Reporter;
 
 public class HwpDoclet implements Doclet {
 
+  private static String UNSUPPORTED_OPTION = "unsupported option";
   private String destinationDir;
   private String outputFilename;
   private List<String> outputForamts;
@@ -52,23 +53,29 @@ public class HwpDoclet implements Doclet {
             destinationDir = arguments.get(0);
             return true;
           }
-        }, new DocletOption(Arrays.asList("--output-filename", "-n"), "Output file name", "<file>") {
+        },
+        new DocletOption(Arrays.asList("--output-filename", "-n"), "Output file name", "<file>") {
           @Override
           public boolean process(String option, List<String> arguments) {
             outputFilename = arguments.get(0);
             return true;
           }
-        }, new DocletOption(Arrays.asList("--output-formats", "-f"), "Specify Output format(s) [hwp,yaml,text]",
+        },
+        new DocletOption(Arrays.asList("--output-formats", "-f"), "Specify Output format(s) [hwp,hwpx,yaml,text]",
             "<format>") {
           @Override
           public boolean process(String option, List<String> arguments) {
             outputForamts = List.of(arguments.get(0).toLowerCase().split(","));
             return true;
           }
-        }, new FakeOption("-doctitle", "Prevent gradle error to doctitle option"),
-        new FakeOption("-windowtitle", "Prevent gradle error to windowtitle option"),
-        new FakeOption("-notimestamp", "Prevent gradle error to notimestamp option")
+        },
+        new FakeOption("-doctitle", UNSUPPORTED_OPTION), // to prevent gradle error
+        new FakeOption("-windowtitle", UNSUPPORTED_OPTION), // to prevent gradle error
+        new FakeOption("-notimestamp", UNSUPPORTED_OPTION), // to prevent gradle error
+        new FakeOption("-Xdoclint:none", UNSUPPORTED_OPTION), // to prevent gradle error
+        new FakeOption("-html5", UNSUPPORTED_OPTION) // to prevent gradle error
     };
+
     return new HashSet<>(Arrays.asList(options));
   }
 
@@ -99,17 +106,17 @@ public class HwpDoclet implements Doclet {
     }
 
     try {
-      if (outputForamts.contains("hwp")) {
+      if (outputForamts.contains("hwp") || outputForamts.contains("hwpx")) {
         File file = new File(destinationDir, outputFilename + ".hwp");
-        HwpWriter.newInstance().write(descriptions, file);
+        HwpWriter.newInstance().write(descriptions, file, outputForamts);
       }
       if (outputForamts.contains("yaml")) {
         File file = new File(destinationDir, outputFilename + ".yaml");
-        YamlWriter.newInstance().write(descriptions, file);
+        YamlWriter.newInstance().write(descriptions, file, outputForamts);
       }
       if (outputForamts.contains("text")) {
         File file = new File(destinationDir, outputFilename + ".txt");
-        TextWriter.newInstance().write(descriptions, file);
+        TextWriter.newInstance().write(descriptions, file, outputForamts);
       }
     } catch (Exception e) {
       reporter.print(Kind.ERROR, e.getLocalizedMessage());
