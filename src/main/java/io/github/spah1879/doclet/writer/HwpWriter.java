@@ -167,7 +167,6 @@ public class HwpWriter extends DocWriter {
     tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_METHOD, middleUpBoldShadeBorderFillId, boldCharShapeId);
     rowIndex++;
 
-    int index = 0;
     for (Method method : methods) {
       tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NAME, middleLeftShadeBorderFillId, boldCharShapeId);
       tableHandler.setParagraphForCell(1, rowIndex, method.getName());
@@ -185,7 +184,7 @@ public class HwpWriter extends DocWriter {
 
       rowIndex++;
 
-      List<Parameter> parameters = methods.get(index).getParameters();
+      List<Parameter> parameters = method.getParameters();
       if (!parameters.isEmpty()) {
         tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_DETAIL, middleLeftShadeBorderFillId, boldCharShapeId);
         tableHandler.setTitleParagraphForCell(1, rowIndex, TITLE_NAME, basicShadeBorderFillId, boldCharShapeId);
@@ -201,8 +200,6 @@ public class HwpWriter extends DocWriter {
           rowIndex++;
         }
       }
-
-      index++;
     }
   }
 
@@ -279,7 +276,7 @@ public class HwpWriter extends DocWriter {
     for (int i = 0; i < propertiesRowCount; i++) {
       rowIndex = tableHandler.addRow(BASE_COLUMN_COUNT, basicBorderFillId);
       if (i == 0) {
-        tableHandler.mergeCell(rowIndex, 0, 1, 12);
+        tableHandler.mergeCell(rowIndex, 0, 1, BASE_COLUMN_COUNT);
       } else {
         tableHandler.mergeCell(rowIndex, 8, 1, 4);
         tableHandler.mergeCell(rowIndex, 6, 1, 2);
@@ -292,7 +289,7 @@ public class HwpWriter extends DocWriter {
     for (int i = 0; i < methodsRowCount; i++) {
       rowIndex = tableHandler.addRow(BASE_COLUMN_COUNT, basicBorderFillId);
       if (i == 0) {
-        tableHandler.mergeCell(rowIndex, 0, 1, 12);
+        tableHandler.mergeCell(rowIndex, 0, 1, BASE_COLUMN_COUNT);
       } else if (i % 2 == 1) {
         tableHandler.mergeCell(rowIndex, 7, 1, 5);
         tableHandler.mergeCell(rowIndex, 1, 1, 5);

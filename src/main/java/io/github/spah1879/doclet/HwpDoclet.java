@@ -18,6 +18,7 @@ import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocletOption;
 import io.github.spah1879.doclet.assorted.DocletOption.FakeOption;
 import io.github.spah1879.doclet.parser.ElementParser;
+import io.github.spah1879.doclet.writer.DocxWriter;
 import io.github.spah1879.doclet.writer.HwpWriter;
 import io.github.spah1879.doclet.writer.TextWriter;
 import io.github.spah1879.doclet.writer.YamlWriter;
@@ -61,7 +62,7 @@ public class HwpDoclet implements Doclet {
             return true;
           }
         },
-        new DocletOption(Arrays.asList("--output-formats", "-f"), "Specify Output format(s) [hwp,hwpx,yaml,text]",
+        new DocletOption(Arrays.asList("--output-formats", "-f"), "Specify Output format(s) [hwp,hwpx,docx,yaml,text]",
             "<format>") {
           @Override
           public boolean process(String option, List<String> arguments) {
@@ -109,6 +110,10 @@ public class HwpDoclet implements Doclet {
       if (outputForamts.contains("hwp") || outputForamts.contains("hwpx")) {
         File file = new File(destinationDir, outputFilename + ".hwp");
         HwpWriter.newInstance().write(descriptions, file, outputForamts);
+      }
+      if (outputForamts.contains("docx")) {
+        File file = new File(destinationDir, outputFilename + ".docx");
+        DocxWriter.newInstance().write(descriptions, file, outputForamts);
       }
       if (outputForamts.contains("yaml")) {
         File file = new File(destinationDir, outputFilename + ".yaml");
