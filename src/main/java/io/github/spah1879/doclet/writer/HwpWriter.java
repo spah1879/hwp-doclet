@@ -1,5 +1,6 @@
 package io.github.spah1879.doclet.writer;
 
+import static io.github.spah1879.doclet.writer.common.TitleConstants.*;
 import static kr.dogfoot.hwplib.object.docinfo.borderfill.BorderThickness.*;
 
 import java.io.File;
@@ -7,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
@@ -32,21 +32,6 @@ public class HwpWriter extends DocWriter {
   private static final int METHOD_ROW_COUNT_OF_TITLE = 1;
   private static final int METHOD_ROW_COUNT_PER_METHOD = 2;
   private static final int PARAMETER_ROW_COUNT_OF_TITLE = 1;
-
-  private static final String TITLE_NAME = "이름";
-  private static final String TITLE_PACKAGE = "패키지";
-  private static final String TITLE_TYPE = "타입";
-  private static final String TITLE_SINCE = "작성일";
-  private static final String TITLE_AUTHOR = "작성자";
-  private static final String TITLE_PROPERTY = "속성";
-  private static final String TITLE_NO_PROPERTY = "속성 없음";
-  private static final String TITLE_MODIFIERS = "제어자";
-  private static final String TITLE_DESCRIPTION = "설명";
-  private static final String TITLE_METHOD = "메소드";
-  private static final String TITLE_NO_METHOD = "메소드 없음";
-  private static final String TITLE_RETURN_TYPE = "리턴타입";
-  private static final String TITLE_PARAMETERS = "파라미터";
-  private static final String TITLE_DETAIL = "상세";
 
   private int boldCharShapeId;
   private int boldSlimCharShapeId;
@@ -102,10 +87,6 @@ public class HwpWriter extends DocWriter {
     bottomUpBoldShadeBorderFillId = Common.getBorderFillIdForCell(hwpFile, MM0_6, MM0_6, MM0_4, MM0_6, true);
     middleShadeFillIds = Arrays.asList(middleLeftShadeBorderFillId, basicShadeBorderFillId,
         middleRightShadeBorderFillId);
-  }
-
-  private String getModifierString(List<String> modifiers) {
-    return modifiers.stream().collect(Collectors.joining(" "));
   }
 
   private boolean isCellShade(int colIndex, int rowIndex) {

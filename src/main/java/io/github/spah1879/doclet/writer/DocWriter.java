@@ -3,6 +3,7 @@ package io.github.spah1879.doclet.writer;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.tools.Diagnostic.Kind;
 
@@ -22,6 +23,10 @@ public abstract class DocWriter {
 
   protected void printNote(String message) {
     reporter.ifPresentOrElse(r -> r.print(Kind.NOTE, message), () -> System.out.println(message));
+  }
+
+  protected String getModifierString(List<String> modifiers) {
+    return modifiers == null ? "" : modifiers.stream().collect(Collectors.joining(" "));
   }
 
   public abstract void write(List<DocDescription> descriptions, File file, List<String> outputForamts) throws Exception;

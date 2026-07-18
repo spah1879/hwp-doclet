@@ -1,5 +1,6 @@
 package io.github.spah1879.doclet.writer;
 
+import static io.github.spah1879.doclet.writer.common.TitleConstants.*;
 import static org.openxmlformats.schemas.wordprocessingml.x2006.main.STTblWidth.*;
 
 import java.io.File;
@@ -7,7 +8,6 @@ import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.poi.xwpf.usermodel.BreakType;
 import org.apache.poi.xwpf.usermodel.TableRowAlign;
@@ -43,21 +43,6 @@ public class DocxWriter extends DocWriter {
   private static final int METHOD_ROW_COUNT_OF_TITLE = 1;
   private static final int METHOD_ROW_COUNT_PER_METHOD = 2;
   private static final int PARAMETER_ROW_COUNT_OF_TITLE = 1;
-
-  private static final String TITLE_NAME = "이름";
-  private static final String TITLE_PACKAGE = "패키지";
-  private static final String TITLE_TYPE = "타입";
-  private static final String TITLE_SINCE = "작성일";
-  private static final String TITLE_AUTHOR = "작성자";
-  private static final String TITLE_PROPERTY = "속성";
-  private static final String TITLE_NO_PROPERTY = "속성 없음";
-  private static final String TITLE_MODIFIERS = "제어자";
-  private static final String TITLE_DESCRIPTION = "설명";
-  private static final String TITLE_METHOD = "메소드";
-  private static final String TITLE_NO_METHOD = "메소드 없음";
-  private static final String TITLE_RETURN_TYPE = "리턴타입";
-  private static final String TITLE_PARAMETERS = "파라미터";
-  private static final String TITLE_DETAIL = "상세";
 
   private XWPFDocument doc;
   private XWPFTable table;
@@ -116,10 +101,6 @@ public class DocxWriter extends DocWriter {
     table.setBottomBorder(XWPFBorderType.SINGLE, thickness, 0, color);
     table.setLeftBorder(XWPFBorderType.SINGLE, thickness, 0, color);
     table.setRightBorder(XWPFBorderType.SINGLE, thickness, 0, color);
-  }
-
-  private String getModifierString(List<String> modifiers) {
-    return modifiers.stream().collect(Collectors.joining(" "));
   }
 
   private void mergeHorizontalCells(XWPFTableRow row, int startCol, int colSpan) {
