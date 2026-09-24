@@ -8,6 +8,7 @@ import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocDescription.Constructor;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
+import io.github.spah1879.doclet.assorted.DocDescription.TagValue;
 import jdk.javadoc.doclet.Reporter;
 
 public class TextWriter extends DocWriter {
@@ -40,13 +41,22 @@ public class TextWriter extends DocWriter {
     add("\n0. Element Information\n");
     add("\tPackage: ").add(typeDesc.getPackageName()).add("\n");
     add("\tElement Name: ").add(typeDesc.getName()).add("\n");
-    add("\tModifier(").add(typeDesc.getModifiers().size()).add("): ");
-    typeDesc.getModifiers().forEach(modifier -> add(modifier).add(" "));
+    add("\tModifier(").add(typeDesc.getModifier().getElements().size()).add("): ");
+    typeDesc.getModifier().getElements().forEach(modifier -> add(modifier).add(" "));
     add("\n");
     add("\tType: ").add(typeDesc.getType()).add("\n");
 
     add("\tTags:\n");
-    typeDesc.getTags().entrySet().forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
+    typeDesc.getTags().entrySet().forEach(t -> {
+      add("\t\t[@").add(t.getKey()).add("]\n");
+      TagValue value = t.getValue();
+      add("\t\t\t- Items:\n");
+      value.getItems().forEach(tagTuple -> {
+        add("\t\t\t\t- Name: ").add(tagTuple.getName()).add("\n");
+        add("\t\t\t\t  Description: ").add(tagTuple.getDescription()).add("\n");
+      });
+      add("\t\t\t- Combined: ").add(value.getCombined()).add("\n");
+    });
 
     add("\tComment:\n")
         .add("\t\tFirst Sentence: ").add(typeDesc.getComment().getFirstSentence()).add("\n")
@@ -59,13 +69,22 @@ public class TextWriter extends DocWriter {
     add("\n1. Field Details\n");
     for (Field field : fields) {
       add("\t").add(index).add(". Field Name: ").add(field.getName()).add("\n");
-      add("\t   Modifier(").add(field.getModifiers().size()).add("): ");
-      field.getModifiers().forEach(modifier -> add(modifier).add(" "));
+      add("\t   Modifier(").add(field.getModifier().getElements().size()).add("): ");
+      add(field.getModifier().getCombined());
       add("\n");
       add("\t   Type: ").add(field.getType().getFull()).add("\n");
 
       add("\tTags:\n");
-      field.getTags().entrySet().forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
+      field.getTags().entrySet().forEach(t -> {
+        add("\t\t[@").add(t.getKey()).add("]\n");
+        TagValue value = t.getValue();
+        add("\t\t\t- Items:\n");
+        value.getItems().forEach(tagTuple -> {
+          add("\t\t\t\t- Name: ").add(tagTuple.getName()).add("\n");
+          add("\t\t\t\t  Description: ").add(tagTuple.getDescription()).add("\n");
+        });
+        add("\t\t\t- Combined: ").add(value.getCombined()).add("\n");
+      });
 
       add("\tComment:\n")
           .add("\t\tFirst Sentence: ").add(field.getComment().getFirstSentence()).add("\n")
@@ -82,8 +101,8 @@ public class TextWriter extends DocWriter {
     for (Constructor constructor : constructors) {
       add("\t").add(index).add(". Constructor Name: ")
           .add(constructor.getName()).add("\n");
-      add("\t Modifier(").add(constructor.getModifiers().size()).add("): ");
-      constructor.getModifiers().forEach(modifier -> add(modifier).add(" "));
+      add("\t Modifier(").add(constructor.getModifier().getElements().size()).add("): ");
+      constructor.getModifier().getElements().forEach(modifier -> add(modifier).add(" "));
       add("\n");
       add("\t   Parameters: \n");
       constructor.getParameters().forEach(parameter -> add("\t\t   - ").add(parameter.getName())
@@ -92,8 +111,16 @@ public class TextWriter extends DocWriter {
       add("\t   Flat Signature: ").add(constructor.getFlatSignature()).add("\n");
 
       add("\tTags:\n");
-      constructor.getTags().entrySet()
-          .forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
+      constructor.getTags().entrySet().forEach(t -> {
+        add("\t\t[@").add(t.getKey()).add("]\n");
+        TagValue value = t.getValue();
+        add("\t\t\t- Items:\n");
+        value.getItems().forEach(tagTuple -> {
+          add("\t\t\t\t- Name: ").add(tagTuple.getName()).add("\n");
+          add("\t\t\t\t  Description: ").add(tagTuple.getDescription()).add("\n");
+        });
+        add("\t\t\t- Combined: ").add(value.getCombined()).add("\n");
+      });
 
       add("\tComment:\n")
           .add("\t\tFirst Sentence: ").add(constructor.getComment().getFirstSentence()).add("\n")
@@ -109,8 +136,8 @@ public class TextWriter extends DocWriter {
     add("\n3. Method Details\n");
     for (Method method : methods) {
       add("\t").add(index).add(". Method Name: ").add(method.getName()).add("\n");
-      add("\t   Modifier(").add(method.getModifiers().size()).add("): ");
-      method.getModifiers().forEach(modifier -> add(modifier).add(" "));
+      add("\t   Modifier(").add(method.getModifier().getElements().size()).add("): ");
+      add(method.getModifier().getCombined());
       add("\n");
       add("\t   Return Type: ").add(method.getReturnType().getFull()).add("\n");
       add("\t   Parameters: \n");
@@ -120,7 +147,16 @@ public class TextWriter extends DocWriter {
       add("\t   Flat Signature: ").add(method.getFlatSignature()).add("\n");
 
       add("\tTags:\n");
-      method.getTags().entrySet().forEach(t -> add("\t\t[@").add(t.getKey()).add("] [").add(t.getValue()).add("]\n"));
+      method.getTags().entrySet().forEach(t -> {
+        add("\t\t[@").add(t.getKey()).add("]\n");
+        TagValue value = t.getValue();
+        add("\t\t\t- Items:\n");
+        value.getItems().forEach(tagTuple -> {
+          add("\t\t\t\t- Name: ").add(tagTuple.getName()).add("\n");
+          add("\t\t\t\t  Description: ").add(tagTuple.getDescription()).add("\n");
+        });
+        add("\t\t\t- Combined: ").add(value.getCombined()).add("\n");
+      });
 
       add("\tComment:\n")
           .add("\t\tFirst Sentence: ").add(method.getComment().getFirstSentence()).add("\n")

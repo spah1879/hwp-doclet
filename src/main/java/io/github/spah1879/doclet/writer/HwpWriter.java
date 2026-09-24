@@ -13,6 +13,7 @@ import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
+import io.github.spah1879.doclet.assorted.DocDescription.TagValue;
 import io.github.spah1879.doclet.writer.hwp.Common;
 import io.github.spah1879.doclet.writer.hwp.TableHandler;
 import kr.dogfoot.hwp2hwpx.Hwp2Hwpx;
@@ -95,7 +96,7 @@ public class HwpWriter extends DocWriter {
   }
 
   private void describeClass(DocDescription desc, int rowIndex) {
-    Map<String, String> tags = desc.getTags();
+    Map<String, TagValue> tags = desc.getTags();
 
     tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_NAME, topLeftShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(1, rowIndex, desc.getName(), topMiddleBorderFillId);
@@ -106,9 +107,9 @@ public class HwpWriter extends DocWriter {
     tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_TYPE, middleLeftShadeBorderFillId, boldCharShapeId);
     tableHandler.setParagraphForCell(1, rowIndex, desc.getType());
     tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_AUTHOR, basicShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(3, rowIndex, tags.getOrDefault("author", ""));
+    tableHandler.setParagraphForCell(3, rowIndex, getCombinedTag(tags, "author"), middleRightBorderFillId);
     tableHandler.setTitleParagraphForCell(4, rowIndex, TITLE_SINCE, basicShadeBorderFillId, boldCharShapeId);
-    tableHandler.setParagraphForCell(5, rowIndex, tags.getOrDefault("since", ""), middleRightBorderFillId);
+    tableHandler.setParagraphForCell(5, rowIndex, getCombinedTag(tags, "since"), middleRightBorderFillId);
   }
 
   private void describeFields(List<Field> fields, int rowIndex) {
@@ -130,7 +131,7 @@ public class HwpWriter extends DocWriter {
 
     for (Field field : fields) {
       tableHandler.setParagraphForCell(0, rowIndex, field.getName(), middleLeftBorderFillId);
-      tableHandler.setParagraphForCell(1, rowIndex, getModifierString(field.getModifiers()));
+      tableHandler.setParagraphForCell(1, rowIndex, field.getModifier().getCombined());
       tableHandler.setParagraphForCell(2, rowIndex, field.getType().getSimple());
       tableHandler.setParagraphForCell(3, rowIndex, field.getComment().getFirstSentence(),
           middleRightBorderFillId);
@@ -156,7 +157,7 @@ public class HwpWriter extends DocWriter {
       rowIndex++;
 
       tableHandler.setTitleParagraphForCell(0, rowIndex, TITLE_MODIFIERS, middleLeftShadeBorderFillId, boldCharShapeId);
-      tableHandler.setParagraphForCell(1, rowIndex, getModifierString(method.getModifiers()));
+      tableHandler.setParagraphForCell(1, rowIndex, method.getModifier().getCombined());
       tableHandler.setTitleParagraphForCell(2, rowIndex, TITLE_RETURN_TYPE, basicShadeBorderFillId,
           boldSlimCharShapeId);
       tableHandler.setParagraphForCell(3, rowIndex, method.getReturnType().getSimple());

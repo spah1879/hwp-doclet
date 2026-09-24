@@ -22,19 +22,40 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UsesTree;
 import com.sun.source.doctree.VersionTree;
 
+import io.github.spah1879.doclet.assorted.DocDescription.TagTuple;
+import io.github.spah1879.doclet.assorted.DocDescription.TagValue;
 import jdk.javadoc.doclet.Reporter;
 
 public class BlockTagParser extends DocParser {
 
-  private final Map<String, String> blockTags;
+  private final Map<String, TagValue> blockTags;
 
   private BlockTagParser(Reporter reporter) {
     super(reporter);
     this.blockTags = new HashMap<>();
   }
 
+  private String getTagTupleString(TagTuple tagTuple) {
+    if (tagTuple.getName().isBlank()) {
+      return tagTuple.getDescription();
+    }
+    return tagTuple.getName() + " " + tagTuple.getDescription();
+  }
+
   private void addToBlockTags(String tagName, String name, List<? extends DocTree> contents) {
-    blockTags.put(tagName, BodyParser.parse(name, contents, reporter.get()).getBody());
+    String description = BodyParser.parse(contents, reporter.get()).getBody();
+    TagTuple tagTuple = TagTuple.builder().name(name).description(description).build();
+
+    if (blockTags.containsKey(tagName)) {
+      TagValue tagValue = blockTags.get(tagName);
+      tagValue.getItems().add(tagTuple);
+      tagValue.setCombined(tagValue.getCombined() + ", " + getTagTupleString(tagTuple));
+    } else {
+      ArrayList<TagTuple> items = new ArrayList<>();
+      items.add(tagTuple);
+      TagValue tagValue = TagValue.builder().items(items).combined(getTagTupleString(tagTuple)).build();
+      blockTags.put(tagName, tagValue);
+    }
   }
 
   private void addToBlockTags(String tagName, List<? extends DocTree> contents) {
@@ -140,7 +161,7 @@ public class BlockTagParser extends DocParser {
     return DEFAULT_VALUE;
   }
 
-  public Map<String, String> getBlockTags() {
+  public Map<String, TagValue> getBlockTags() {
     return blockTags;
   }
 

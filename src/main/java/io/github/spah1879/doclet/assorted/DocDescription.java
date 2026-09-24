@@ -26,6 +26,31 @@ public final class DocDescription {
   @Setter
   @Getter
   @Builder
+  public static class Modifier {
+    @Singular
+    List<String> elements;
+    String combined;
+  }
+
+  @Setter
+  @Getter
+  @Builder
+  public static class TagTuple {
+    String name;
+    String description;
+  }
+
+  @Setter
+  @Getter
+  @Builder
+  public static class TagValue {
+    List<TagTuple> items;
+    String combined;
+  }
+
+  @Setter
+  @Getter
+  @Builder
   public static class Comment {
     String firstSentence;
     String body;
@@ -47,10 +72,9 @@ public final class DocDescription {
   @Builder
   public static class Field {
     String name;
-    @Singular
-    List<String> modifiers;
+    Modifier modifier;
     Type type;
-    Map<String, String> tags;
+    Map<String, TagValue> tags;
     Comment comment;
     @Singular
     Map<String, Map<String, Object>> annotations;
@@ -61,12 +85,12 @@ public final class DocDescription {
   @Builder
   public static class Constructor {
     String name;
-    @Singular
-    List<String> modifiers;
+    Modifier modifier;
     @Singular
     List<Parameter> parameters;
+    String parameterSpec;
     String flatSignature;
-    Map<String, String> tags;
+    Map<String, TagValue> tags;
     Comment comment;
     @Singular
     Map<String, Map<String, Object>> annotations;
@@ -77,13 +101,13 @@ public final class DocDescription {
   @Builder
   public static class Method {
     String name;
-    @Singular
-    List<String> modifiers;
+    Modifier modifier;
     Type returnType;
     @Singular
     List<Parameter> parameters;
+    String parameterSpec;
     String flatSignature;
-    Map<String, String> tags;
+    Map<String, TagValue> tags;
     Comment comment;
     @Singular
     Map<String, Map<String, Object>> annotations;
@@ -91,10 +115,9 @@ public final class DocDescription {
 
   String packageName;
   String name;
-  @Singular
-  List<String> modifiers;
+  Modifier modifier;
   String type;
-  Map<String, String> tags;
+  Map<String, TagValue> tags;
   Comment comment;
   @Singular
   Map<String, Map<String, Object>> annotations;

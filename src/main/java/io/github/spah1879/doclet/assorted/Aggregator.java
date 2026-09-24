@@ -2,6 +2,8 @@ package io.github.spah1879.doclet.assorted;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.lang.model.element.ExecutableElement;
@@ -15,7 +17,9 @@ import com.sun.source.util.DocTrees;
 import io.github.spah1879.doclet.assorted.DocDescription.Constructor;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
+import io.github.spah1879.doclet.assorted.DocDescription.Modifier;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
+import io.github.spah1879.doclet.assorted.DocDescription.TagValue;
 import io.github.spah1879.doclet.assorted.DocDescription.Type;
 import io.github.spah1879.doclet.parser.AnnotationParser;
 import io.github.spah1879.doclet.parser.BlockTagParser;
@@ -37,12 +41,13 @@ public class Aggregator {
   }
 
   private String getSimpleName(String qualifiedName) {
-    return qualifiedName.replaceAll("[^\\. ,<]+\\.", "");
+    return Pattern.compile("[^\\. ,<]+\\.").matcher(qualifiedName).replaceAll("");
   }
 
-  private Type buildType(TypeMirror type) {
-    String full = String.valueOf(type);
-    return new Type(full, getSimpleName(full));
+  private String getParameterSpec(List<? extends VariableElement> parameters) {
+    return parameters.stream()
+        .map(p -> getSimpleName(String.valueOf(p.asType())) + " " + p.getSimpleName())
+        .collect(Collectors.joining(", ", "(", ")"));
   }
 
   private String getFlatSignature(List<? extends VariableElement> parameters) {
@@ -51,14 +56,27 @@ public class Aggregator {
         .collect(Collectors.joining(", ", "(", ")"));
   }
 
-  private Parameter buildParameter(VariableElement parameter, Map<String, String> tags) {
-    String paramName = parameter.getSimpleName().toString();
-    String comment = tags.entrySet().stream()
-        .filter(t -> t.getKey().equals("param") && t.getValue().startsWith(paramName + " "))
-        .findFirst()
-        .map(t -> t.getValue().substring(paramName.length() + 1))
-        .orElse("");
+  private Type buildType(TypeMirror type) {
+    String full = String.valueOf(type);
+    return new Type(full, getSimpleName(full));
+  }
 
+  private Modifier buildModifier(Set<javax.lang.model.element.Modifier> modifiers) {
+    List<String> elements = modifiers.stream().map(String::valueOf).collect(Collectors.toList());
+    return Modifier.builder()
+        .elements(elements)
+        .combined(String.join(" ", elements))
+        .build();
+  }
+
+  private Parameter buildParameter(VariableElement parameter, Map<String, TagValue> tags) {
+    String paramName = parameter.getSimpleName().toString();
+    TagValue tagValue = tags.get("param");
+    String comment = tagValue != null ? tagValue.getItems().stream()
+        .filter(v -> v.getName().equals(paramName))
+        .findFirst()
+        .map(v -> v.getDescription())
+        .orElse("") : "";
     return new Parameter(paramName, buildType(parameter.asType()), comment);
   }
 
@@ -66,8 +84,7 @@ public class Aggregator {
     builder.packageName(String.valueOf(environment.getElementUtils().getPackageOf(element)))
         .name(String.valueOf(element.getSimpleName()))
         .type(element.getKind().name().toLowerCase());
-    element.getModifiers().forEach(n -> builder.modifier(String.valueOf(n)));
-
+    builder.modifier(buildModifier(element.getModifiers()));
     DocCommentTree commentTree = docTrees.getDocCommentTree(element);
     CommentParser parser = CommentParser.parse(commentTree, reporter);
     builder.comment(parser.getComment());
@@ -79,8 +96,7 @@ public class Aggregator {
     elements.forEach(e -> {
       Field.FieldBuilder fb = Field.builder();
       fb.name(String.valueOf(e.getSimpleName())).type(buildType(e.asType()));
-      e.getModifiers().forEach(n -> fb.modifier(String.valueOf(n)));
-
+      fb.modifier(buildModifier(e.getModifiers()));
       DocCommentTree commentTree = docTrees.getDocCommentTree(e);
       CommentParser parser = CommentParser.parse(commentTree, reporter);
       fb.comment(parser.getComment());
@@ -94,13 +110,14 @@ public class Aggregator {
     elements.forEach(e -> {
       Constructor.ConstructorBuilder cb = Constructor.builder();
       cb.name(String.valueOf(e.getEnclosingElement().getSimpleName()));
-      e.getModifiers().forEach(n -> cb.modifier(String.valueOf(n)));
+      cb.modifier(buildModifier(e.getModifiers()));
+      cb.parameterSpec(getParameterSpec(e.getParameters()));
       cb.flatSignature(getFlatSignature(e.getParameters()));
 
       DocCommentTree commentTree = docTrees.getDocCommentTree(e);
       CommentParser parser = CommentParser.parse(commentTree, reporter);
       cb.comment(parser.getComment());
-      Map<String, String> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
+      Map<String, TagValue> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
       cb.tags(tags);
       e.getParameters().forEach(p -> cb.parameter(buildParameter(p, tags)));
       cb.annotations(AnnotationParser.parse(e.getAnnotationMirrors(), reporter));
@@ -112,14 +129,15 @@ public class Aggregator {
     elements.forEach(e -> {
       Method.MethodBuilder mb = Method.builder();
       mb.name(String.valueOf(e.getSimpleName()));
-      e.getModifiers().forEach(n -> mb.modifier(String.valueOf(n)));
+      mb.modifier(buildModifier(e.getModifiers()));
       mb.returnType(buildType(e.getReturnType()));
+      mb.parameterSpec(getParameterSpec(e.getParameters()));
       mb.flatSignature(getFlatSignature(e.getParameters()));
 
       DocCommentTree commentTree = docTrees.getDocCommentTree(e);
       CommentParser parser = CommentParser.parse(commentTree, reporter);
       mb.comment(parser.getComment());
-      Map<String, String> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
+      Map<String, TagValue> tags = BlockTagParser.parse(parser.getBlockTags(), reporter).getBlockTags();
       mb.tags(tags);
       e.getParameters().forEach(p -> mb.parameter(buildParameter(p, tags)));
       mb.annotations(AnnotationParser.parse(e.getAnnotationMirrors(), reporter));

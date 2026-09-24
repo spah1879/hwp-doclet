@@ -34,6 +34,7 @@ import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
+import io.github.spah1879.doclet.assorted.DocDescription.TagValue;
 
 public class DocxWriter extends DocWriter {
 
@@ -184,13 +185,13 @@ public class DocxWriter extends DocWriter {
     mergeHorizontalCells(row2, 8, 3);
     mergeHorizontalCells(row2, 3, 5);
     mergeHorizontalCells(row2, 0, 3);
-    Map<String, String> tags = desc.getTags();
+    Map<String, TagValue> tags = desc.getTags();
     setCellTextAndProperties(row2.getCell(0), TITLE_TYPE, true);
     setCellTextAndProperties(row2.getCell(1), desc.getType(), false);
     setCellTextAndProperties(row2.getCell(2), TITLE_AUTHOR, true);
-    setCellTextAndProperties(row2.getCell(3), tags.getOrDefault("author", ""), false);
+    setCellTextAndProperties(row2.getCell(3), getCombinedTag(tags, "author"), false);
     setCellTextAndProperties(row2.getCell(4), TITLE_SINCE, true);
-    setCellTextAndProperties(row2.getCell(5), tags.getOrDefault("since", ""), false);
+    setCellTextAndProperties(row2.getCell(5), getCombinedTag(tags, "since"), false);
 
     setBorderGridlineBold(row2);
   }
@@ -223,7 +224,7 @@ public class DocxWriter extends DocWriter {
       mergeHorizontalCells(fieldRow, 6, 6);
       mergeHorizontalCells(fieldRow, 0, 6);
       setCellTextAndProperties(fieldRow.getCell(0), field.getName(), false);
-      setCellTextAndProperties(fieldRow.getCell(1), getModifierString(field.getModifiers()), false);
+      setCellTextAndProperties(fieldRow.getCell(1), field.getModifier().getCombined(), false);
       setCellTextAndProperties(fieldRow.getCell(2), field.getType().getSimple(), false);
       setCellTextAndProperties(fieldRow.getCell(3), field.getComment().getFirstSentence(), false);
       rowIndex++;
@@ -262,7 +263,7 @@ public class DocxWriter extends DocWriter {
       mergeHorizontalCells(row, 3, 3);
       mergeHorizontalCells(row, 0, 3);
       setCellTextAndProperties(row.getCell(0), TITLE_MODIFIERS, true);
-      setCellTextAndProperties(row.getCell(1), getModifierString(method.getModifiers()), false);
+      setCellTextAndProperties(row.getCell(1), method.getModifier().getCombined(), false);
       setCellTextAndProperties(row.getCell(2), TITLE_RETURN_TYPE, true);
       setCellTextAndProperties(row.getCell(3), method.getReturnType().getSimple(), false);
       setCellTextAndProperties(row.getCell(4), TITLE_PARAMETERS, true);

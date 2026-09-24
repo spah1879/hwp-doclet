@@ -25,6 +25,7 @@ import io.github.spah1879.doclet.assorted.DocDescription;
 import io.github.spah1879.doclet.assorted.DocDescription.Field;
 import io.github.spah1879.doclet.assorted.DocDescription.Method;
 import io.github.spah1879.doclet.assorted.DocDescription.Parameter;
+import io.github.spah1879.doclet.assorted.DocDescription.TagValue;
 
 public class XlsxWriter extends DocWriter {
 
@@ -124,13 +125,13 @@ public class XlsxWriter extends DocWriter {
     mergeHorizontalCells(1, 1, 3);
     mergeHorizontalCells(1, 5, 3);
     mergeHorizontalCells(1, 9, 3);
-    Map<String, String> tags = desc.getTags();
+    Map<String, TagValue> tags = desc.getTags();
     setCell(row2, 0, TITLE_TYPE, true);
     setCell(row2, 1, desc.getType(), false);
     setCell(row2, 4, TITLE_AUTHOR, true);
-    setCell(row2, 5, tags.getOrDefault("author", ""), false);
+    setCell(row2, 5, getCombinedTag(tags, "author"), false);
     setCell(row2, 8, TITLE_SINCE, true);
-    setCell(row2, 9, tags.getOrDefault("since", ""), false);
+    setCell(row2, 9, getCombinedTag(tags, "since"), false);
 
     setOutline(0, 1);
   }
@@ -166,7 +167,7 @@ public class XlsxWriter extends DocWriter {
       mergeHorizontalCells(rowIndex, 6, 2);
       mergeHorizontalCells(rowIndex, 8, 4);
       setCell(fieldRow, 0, field.getName(), false);
-      setCell(fieldRow, 3, getModifierString(field.getModifiers()), false);
+      setCell(fieldRow, 3, field.getModifier().getCombined(), false);
       setCell(fieldRow, 6, field.getType().getSimple(), false);
       setCell(fieldRow, 8, field.getComment().getFirstSentence(), false);
       rowIndex++;
@@ -203,7 +204,7 @@ public class XlsxWriter extends DocWriter {
       mergeHorizontalCells(rowIndex, 4, 3);
       mergeHorizontalCells(rowIndex, 8, 4);
       setCell(row, 0, TITLE_MODIFIERS, true);
-      setCell(row, 1, getModifierString(method.getModifiers()), false);
+      setCell(row, 1, method.getModifier().getCombined(), false);
       setCell(row, 3, TITLE_RETURN_TYPE, true);
       setCell(row, 4, method.getReturnType().getSimple(), false);
       setCell(row, 7, TITLE_PARAMETERS, true);

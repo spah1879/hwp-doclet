@@ -55,10 +55,11 @@ public class DocRepresenter extends Representer {
   private static final List<String> ORDERS = List.of(
       "packageName",
       "name",
-      "modifiers",
+      "modifier",
       "type",
       "returnType",
       "parameters",
+      "parameterSpec",
       "flatSignature",
       "tags",
       "comment",
@@ -70,7 +71,10 @@ public class DocRepresenter extends Representer {
       "full",
       "simple",
       "firstSentence",
-      "body");
+      "body",
+      "elements",
+      "items",
+      "combined");
 
   class BeanPropertyComparator implements Comparator<Property> {
     public int compare(Property p1, Property p2) {
